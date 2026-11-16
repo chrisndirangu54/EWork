@@ -1,0 +1,46 @@
+name: Managed marketplace overlay verification
+on:
+  pull_request:
+    paths:
+      - 'marketplace/**'
+      - '.gitmodules'
+      - '.github/workflows/managed-marketplace.yml'
+  push:
+    branches: [master]
+    paths:
+      - 'marketplace/**'
+      - '.gitmodules'
+      - '.github/workflows/managed-marketplace.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: |
+            marketplace/upstream/lancy/package-lock.json
+            marketplace/upstream/lancy/backend/package-lock.json
+      - name: Apply TeknTandao overlay
+        run: |
+          bash marketplace/overlay/apply-overlay.sh
+          bash marketplace/overlay/verify-overlay.sh
+      - name: Install and validate backend
+        working-directory: marketplace/upstream/lancy/backend
+        run: |
+          npm ci
+          npx prisma validate
+          npx prisma generate
+          npx prisma db push
+          npm run build
+          node -r ts-node/register --test tests/firebase-token.test.ts tests/managed-service.test.ts
+      - name: Build frontend
+        working-directory: marketplace/upstream/lancy
+        run: |
+          npm ci
+          npm run build
