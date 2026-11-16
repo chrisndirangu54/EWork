@@ -1,0 +1,65 @@
+{
+  "schema_version": "0.1.0",
+  "brand": "TeknTandao Global Services",
+  "currency": "USD",
+  "pricing_note": "Price on quotation; no default offer is a binding quote.",
+  "offerings": [
+    {
+      "slug": "ai-automation",
+      "name": "AI Workflow Automation",
+      "delivery_model": "managed-project",
+      "categories": [
+        "LLM integration",
+        "workflow orchestration",
+        "process automation"
+      ],
+      "verification_required": true
+    },
+    {
+      "slug": "software-engineering",
+      "name": "Managed Software Engineering",
+      "delivery_model": "dedicated-team-or-project",
+      "categories": [
+        "web development",
+        "mobile development",
+        "quality assurance",
+        "API integration"
+      ],
+      "verification_required": true
+    },
+    {
+      "slug": "cloud-it-support",
+      "name": "Cloud and IT Operations",
+      "delivery_model": "monthly-retainer",
+      "categories": [
+        "cloud operations",
+        "observability",
+        "managed support",
+        "security hardening"
+      ],
+      "verification_required": true
+    },
+    {
+      "slug": "data-analytics",
+      "name": "Data Engineering and Analytics",
+      "delivery_model": "managed-project",
+      "categories": [
+        "data pipelines",
+        "reporting",
+        "machine learning evaluation"
+      ],
+      "verification_required": true
+    },
+    {
+      "slug": "technical-support",
+      "name": "Technical Customer Support",
+      "delivery_model": "monthly-retainer",
+      "categories": [
+        "SaaS support",
+        "documentation",
+        "incident triage"
+      ],
+      "verification_required": true
+    }
+  ]
+}

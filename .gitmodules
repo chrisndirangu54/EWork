@@ -1,0 +1,6 @@
+[submodule "marketplace/upstream/lancy"]
+	path = marketplace/upstream/lancy
+	url = https://github.com/Hamenath/lancy.git
+[submodule "marketplace/reference/freelancezero"]
+	path = marketplace/reference/freelancezero
+	url = https://github.com/freelancezero/freelancezero.git
