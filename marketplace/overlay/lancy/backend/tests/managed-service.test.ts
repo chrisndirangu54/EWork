@@ -1,5 +1,5 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import * as assert from 'node:assert/strict';
 import { ManagedService } from '../src/managed/managed.service';
 
 const client = { id: 'u-1', role: 'FREELANCER', email: 'client@example.org', name: 'Client', status: 'ACTIVE' } as any;

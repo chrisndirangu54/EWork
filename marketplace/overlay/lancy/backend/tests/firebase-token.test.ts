@@ -1,5 +1,5 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import * as assert from 'node:assert/strict';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import { verifyFirebaseIdToken } from '../src/common/security/firebase-id-token';
 
