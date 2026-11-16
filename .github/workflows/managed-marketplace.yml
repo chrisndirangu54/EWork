@@ -1,4 +1,4 @@
-name: Managed marketplace overlay verification
+name: TeknTandao dual-marketplace verification
 on:
   pull_request:
     paths:
@@ -38,7 +38,7 @@ jobs:
           npx prisma generate
           npx prisma db push
           npm run build
-          node -r ts-node/register --test tests/firebase-token.test.ts tests/managed-service.test.ts
+          node -r ts-node/register --test tests/firebase-token.test.ts tests/managed-service.test.ts tests/freelance.test.ts
       - name: Build frontend
         working-directory: marketplace/upstream/lancy
         run: |

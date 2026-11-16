@@ -28,7 +28,8 @@ function Header() {
     <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5">
       <Link to="/services" className="text-xl font-black tracking-tight text-slate-900">Tekn<span className="text-blue-700">Tandao</span> <span className="text-sm font-medium text-slate-500">Global Services</span></Link>
       <nav aria-label="Global services" className="flex gap-5 text-sm font-medium text-slate-600">
-        <Link to="/services" className="hover:text-blue-700">Services</Link>
+        <Link to="/services" className="hover:text-blue-700">Managed services</Link>
+        <Link to="/freelance" className="hover:text-blue-700">Hire freelancers</Link>
         <Link to={user ? '/managed' : '/login'} className="hover:text-blue-700">{user ? 'Client workspace' : 'Client sign-in'}</Link>
         <Link to="/" className="hover:text-blue-700">Marketplace</Link>
       </nav>
@@ -63,7 +64,7 @@ export function TeknTandaoServices() {
       </section>
       <section className="mx-auto max-w-7xl px-5 py-16">
         <h2 className="text-3xl font-black text-slate-900">Managed technology services</h2>
-        <p className="mb-8 mt-3 max-w-2xl text-slate-600">Choose a delivery capability and describe the outcomes you need. Our team will review the requirements and prepare a custom quotation.</p>
+        <p className="mb-8 mt-3 max-w-2xl text-slate-600">Choose a managed delivery capability and describe the outcomes you need. Our team will review the requirements and prepare a custom quotation. Prefer direct hiring? Explore our verified freelancer marketplace.</p>
         <ServiceCards offerings={offerings} />
       </section>
       <section className="mx-auto max-w-7xl px-5 pb-20">

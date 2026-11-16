@@ -9,4 +9,9 @@ grep -q "FIREBASE_PROJECT_ID" "$TARGET/backend/src/common/guards/firebase-auth.g
 ! grep -q "dto.role || 'FREELANCER'" "$TARGET/backend/src/auth/auth.controller.ts"
 grep -q "model ManagedInvoice" "$TARGET/backend/prisma/schema.prisma"
 grep -q 'path="/managed"' "$TARGET/src/App.tsx"
+grep -q 'path="/freelance"' "$TARGET/src/App.tsx"
+grep -q 'path="/freelance/workspace"' "$TARGET/src/App.tsx"
+grep -q 'model FreelanceOrder' "$TARGET/backend/prisma/schema.prisma"
+grep -q 'model FreelanceGig' "$TARGET/backend/prisma/schema.prisma"
+[[ -f "$TARGET/backend/src/freelance/freelance.controller.ts" ]]
 echo 'Static integration assertions passed (not a substitute for runtime tests or audit).'

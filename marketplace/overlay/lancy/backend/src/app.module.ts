@@ -19,11 +19,12 @@ import { HealthModule } from './health/health.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { ManagedModule } from './managed/managed.module';
+import { FreelanceModule } from './freelance/freelance.module';
 
 @Module({
   imports: [DatabaseModule, AuthModule, UsersModule, FreelancersModule, ProjectsModule, ProposalsModule,
     ContractsModule, MilestonesModule, NotificationsModule, MessagingModule, PaymentsModule, ReviewsModule,
-    SearchModule, AdminModule, AnalyticsModule, AiModule, HealthModule, RecommendationsModule, ManagedModule],
+    SearchModule, AdminModule, AnalyticsModule, AiModule, HealthModule, RecommendationsModule, ManagedModule, FreelanceModule],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
