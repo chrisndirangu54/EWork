@@ -1,0 +1,70 @@
+
+/** TeknTandao Global Services managed-delivery domain (no money custody). */
+model ManagedOrganization {
+  id             String              @id @default(uuid())
+  ownerId        String
+  name           String
+  country        String
+  website        String?
+  status         String              @default("PENDING")
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  engagements    ManagedEngagement[]
+  @@index([ownerId])
+}
+
+model ManagedEngagement {
+  id             String               @id @default(uuid())
+  organizationId String
+  organization   ManagedOrganization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  serviceSlug    String
+  title          String
+  brief          String
+  currency       String               @default("USD")
+  quotedCents    Int?
+  status         String               @default("REQUESTED")
+  managerId      String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  milestones     ManagedMilestone[]
+  invoices       ManagedInvoice[]
+  @@index([organizationId, status])
+}
+
+model ManagedMilestone {
+  id             String             @id @default(uuid())
+  engagementId   String
+  engagement     ManagedEngagement  @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  title          String
+  status         String             @default("PLANNED")
+  dueDate        DateTime?
+  deliveryNote   String?
+  clientFeedback String?
+  approvedAt     DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  @@index([engagementId])
+}
+
+model ManagedInvoice {
+  id             String             @id @default(uuid())
+  engagementId   String
+  engagement     ManagedEngagement  @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  number         String             @unique
+  amountCents    Int
+  currency       String
+  status         String             @default("DRAFT")
+  issuedAt       DateTime?
+  createdAt      DateTime           @default(now())
+  @@index([engagementId])
+}
+
+model ManagedSpecialist {
+  id             String             @id @default(uuid())
+  userId         String             @unique
+  skills         String
+  vetted         Boolean            @default(false)
+  available      Boolean            @default(false)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+}

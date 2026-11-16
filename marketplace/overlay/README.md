@@ -1,0 +1,80 @@
+# TeknTandao Global Services — managed-delivery integration
+
+## Scope implemented
+- Branded public landing page at `/services` (five service categories, explain managed delivery, link to client login).
+- Protected client workspace at `/managed` with company registration, verification status, service requests, quote acceptance, milestones, feedback/revisions and draft invoice records.
+- Authorized admin API + dashboard for company verification, quotes, delivery-manager assignment, milestone submission, invoices and completion.
+- Backend persistence through Prisma, data-owner scoping, status-transition rules, audit records and integer minor-unit money representation.
+- Role-restricted specialist vetting API (admin-only; does not expose private freelancer details publicly).
+- Crucial upstream authentication remediation: verifies Firebase JWT RS256 with Google's public certificates and strict issuer/audience/expiry claims, removes fallback and public role assignment.
+- Requires a Firebase project owned by your team. Upstream author's Firebase configuration is not inherited.
+
+## Checkout and apply the first-party overlay
+```bash
+git clone --recurse-submodules https://github.com/chrisndirangu54/EWork.git
+cd EWork
+bash marketplace/overlay/apply-overlay.sh
+bash marketplace/overlay/verify-overlay.sh
+```
+
+The overlay script requires the pinned upstream Lancy commit. It modifies the **local submodule working tree**, so `git status` will show a dirty submodule as expected. The first-party overlay source remains versioned in EWork; do **not** commit those modifications inside the third-party submodule.
+
+## Configuration (development only)
+```bash
+cd marketplace/upstream/lancy
+cp ../../overlay/env.frontend.example .env.local
+cd backend
+cp ../../../overlay/env.backend.example .env
+```
+
+Edit the two generated files and set your own Firebase project values. Enable Email/Password or Google sign-in in that Firebase project's Auth settings. The frontend `VITE_FIREBASE_PROJECT_ID` and backend `FIREBASE_PROJECT_ID` must match. Never commit live credentials.
+
+Then install and build (requires Node 22.x, npm and a network connection):
+```bash
+# From marketplace/upstream/lancy/backend
+npm ci
+npx prisma generate
+npx prisma db push
+npm run build
+node -r ts-node/register --test tests/firebase-token.test.ts tests/managed-service.test.ts
+cd ..
+npm ci
+npm run build
+npm run dev
+```
+In another terminal, from `marketplace/upstream/lancy/backend` run `npm run dev`.
+
+**Prisma `db push` is for an empty/local development database only.** Before production, create and review a database migration, rehearse backup/rollback, and avoid forceful schema changes in production. The upstream backend currently uses SQLite by default.
+
+## Client path
+1. Client signs into Firebase and opens `/managed`.
+2. Verified-email token is validated server-side; the client registers an organization (PENDING).
+3. Admin reviews business information externally, then approves or rejects.
+4. Client submits a service request (REQUESTED).
+5. Admin quotes an approved organization (QUOTED).
+6. Client accepts the amount (ACCEPTED); legal service agreement/signature must still be handled outside this MVP.
+7. Admin assigns a delivery manager to begin work (ACTIVE), adds milestones and submits delivery notes.
+8. Client approves or requests revisions; admin marks engagement completed once all milestones are approved.
+9. Admin creates **draft invoice records only**. No checkout, escrow, payouts, invoice emailing, or provider settlement.
+
+## API routes
+Public: `GET /api/v1/managed/catalog`.
+
+Authenticated: `GET/POST /managed/organizations`, `GET/POST /managed/engagements`, `GET /managed/engagements/:id`, `POST /managed/engagements/:id/accept`, `POST /managed/milestones/:id/review`.
+
+Admin only: `PATCH /managed/admin/organizations/:id/verify`, `POST /managed/admin/engagements/:id/quote`, `POST /managed/admin/engagements/:id/start`, `POST /managed/admin/engagements/:id/milestones`, `POST /managed/admin/milestones/:id/submit`, `POST /managed/admin/engagements/:id/complete`, `POST /managed/admin/engagements/:id/invoice-drafts`, `GET/POST /managed/admin/specialists`.
+
+All are prefixed with `/api/v1`. Authorized requests use `Authorization: Bearer <Firebase ID token>`. Do not use a Firebase client API key as a bearer token.
+
+## Limitations before commercial release
+- Upstream Lancy has additional endpoints and code that have **not** had a full independent security audit; new token verification does not certify the entire application.
+- The existing upstream marketplace pages still carry Lancy branding; only the new Global Services pages are TeknTandao branded. A complete product rebrand remains future work.
+- The quote-acceptance button is not a legally sufficient signed SOW; contracts, VAT/tax treatment and pricing terms must be implemented before paid use.
+- Admin status verification is a manual attestation; independent KYB tools, document collection, and evidence review are not yet integrated.
+- Service request forms do not include file attachments; the delivery manager must use approved channels pending secure storage.
+- No tenancy team roles, per-country invoicing rules, payment gateway, real escrow, payouts, timesheets, or workforce scheduling.
+- CI provides builds and selected unit tests but does not replace penetration testing or compliance due diligence.
+- No production hosting or deployment is made by merging this PR.
+
+## Environment safeguards
+Use a project-specific Firebase project, properly configured HTTPS and CORS, managed secrets, an independent external security review, backups and incident response. Enable anti-abuse measures for sign-in and customer forms. If a client requires international data processing agreements, obtain them before transferring personal data.
