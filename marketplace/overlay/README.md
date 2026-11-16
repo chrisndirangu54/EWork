@@ -1,6 +1,6 @@
-# TeknTandao Global Services — managed-delivery integration
+# TeknTandao Global Services — managed outsourcing + direct freelancer marketplace
 
-## Scope implemented
+## Scope implemented — managed BPO/KPO
 - Branded public landing page at `/services` (five service categories, explain managed delivery, link to client login).
 - Protected client workspace at `/managed` with company registration, verification status, service requests, quote acceptance, milestones, feedback/revisions and draft invoice records.
 - Authorized admin API + dashboard for company verification, quotes, delivery-manager assignment, milestone submission, invoices and completion.
@@ -36,7 +36,7 @@ npm ci
 npx prisma generate
 npx prisma db push
 npm run build
-node -r ts-node/register --test tests/firebase-token.test.ts tests/managed-service.test.ts
+node -r ts-node/register --test tests/firebase-token.test.ts tests/managed-service.test.ts tests/freelance.test.ts
 cd ..
 npm ci
 npm run build
@@ -78,3 +78,73 @@ All are prefixed with `/api/v1`. Authorized requests use `Authorization: Bearer 
 
 ## Environment safeguards
 Use a project-specific Firebase project, properly configured HTTPS and CORS, managed secrets, an independent external security review, backups and incident response. Enable anti-abuse measures for sign-in and customer forms. If a client requires international data processing agreements, obtain them before transferring personal data.
+
+## Second operating model: direct freelancer marketplace (development foundation)
+
+The same authenticated TeknTandao frontend now supports **both**:
+- **Managed services** at `/services` and `/managed`: company verification, organization-owned briefs, quotations, assigned delivery managers, milestones, approval/revision cycles and draft invoices. TeknTandao is responsible for delivery.
+- **Direct hire** at `/freelance`, `/freelance/gigs/:id` and `/freelance/workspace`: freelancer application, admin verification, service listings with Basic/Standard/Premium packages, public discovery, order requests, buyer/seller messaging, delivery, revisions, reviews and administrator-mediated disputes. The freelancer is responsible for delivery.
+
+Both models reuse the patched Firebase identity validator; they **do not** share payment ledgers or pretend to be a licensed escrow provider. The direct marketplace uses a proposed **12% commission estimate**, stored in minor currency units on each order snapshot. This is a proposed price policy, not a posted payout or a charge to any user.
+
+### Direct marketplace workflow
+
+1. A professional signs in, applies with a profile and awaits manual approval (`PENDING`).
+2. An administrator independently checks identity and professional qualifications before marking `VERIFIED`.
+3. The seller creates a draft gig with one to three currency-consistent packages and publishes it.
+4. A client selects a package and submits a project brief. The platform records a `REQUESTED` order, **without payment**.
+5. The verified seller accepts (`IN_PROGRESS`) or declines. The client may cancel an unaccepted request.
+6. Seller submits a delivery note; buyer approves it or asks for revisions within the published limit.
+7. Completed orders can be rated; disputes are reviewed by an administrator, who may resume or cancel the workflow. **No automatic refunds, funding or payouts occur.**
+
+### Marketplace API endpoints
+
+Public:
+- `GET /api/v1/freelance/gigs?q=...`
+- `GET /api/v1/freelance/gigs/:id`
+
+Authenticated:
+- `GET /api/v1/freelance/me`
+- `POST /api/v1/freelance/seller/apply`
+- `POST /api/v1/freelance/gigs`
+- `POST /api/v1/freelance/gigs/:id/publish`
+- `POST /api/v1/freelance/gigs/:id/archive`
+- `POST /api/v1/freelance/orders`
+- `GET /api/v1/freelance/orders`
+- `GET /api/v1/freelance/orders/:id`
+- `POST /api/v1/freelance/orders/:id/respond`
+- `POST /api/v1/freelance/orders/:id/cancel`
+- `POST /api/v1/freelance/orders/:id/deliver`
+- `POST /api/v1/freelance/orders/:id/review-delivery`
+- `GET/POST /api/v1/freelance/orders/:id/messages`
+- `POST /api/v1/freelance/orders/:id/reviews`
+- `POST /api/v1/freelance/orders/:id/disputes`
+
+Admin:
+- `GET /api/v1/freelance/admin/sellers`
+- `PATCH /api/v1/freelance/admin/sellers/:id/verify`
+- `GET /api/v1/freelance/admin/disputes`
+- `POST /api/v1/freelance/admin/disputes/:id/resolve`
+
+### Data and audit safeguards
+
+- `FreelanceSeller`, `FreelanceGig`, `FreelancePackage`, `FreelanceOrder`, `FreelanceMessage`, `FreelanceReview` and `FreelanceDispute` are appended to upstream Prisma by `apply-overlay.sh`.
+- Public discovery only lists **published** offers from **verified** sellers.
+- Marketplace order reads, messages, delivery, reviews and disputes enforce server-side buyer/seller/admin ownership; cannot rely on the frontend to hide controls.
+- Prices, proposed commission and revision limits are snapshotted on each order; changes to listings cannot rewrite existing orders.
+- The service uses optimistic status checks and audits important transitions.
+- The application must adopt verified local business records, appropriate contractor engagement terms, and GDPR/UK GDPR/Kenya DPA-compliant data handling before handling international customers.
+
+### Not completed, do not claim production readiness
+
+Payments, licensed escrow, chargebacks, payouts, taxes/VAT, processor reconciliation, legally executed contracts, seller evidence/KYC uploads, secure file delivery, advanced ranking/AI matching, live chat websocket integration, per-order payment status, workforce time tracking, revenue recognition, and complete third-party endpoint security audit are still pending. The existing upstream Lancy marketing pages are not fully rebranded. Merging the overlay **does not** launch or deploy the application.
+
+### Applying safely
+
+```bash
+git submodule update --init --recursive
+bash marketplace/overlay/apply-overlay.sh
+bash marketplace/overlay/verify-overlay.sh
+```
+
+The script appends both Prisma schema fragments **idempotently** to the pinned Lancy checkout, then copies first-party source and tests. Do not run `prisma db push` on an existing production database. Prepare a reviewed migration and backup/rollback rehearsal first.

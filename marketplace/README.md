@@ -1,6 +1,6 @@
 # TeknTandao Global Services — marketplace foundation
 
-This directory introduces a **reviewable, non-production** starting point for a Kenyan technology BPO/KPO and managed-services marketplace serving UK, EU and US companies.
+This directory contains a **reviewable, non-production** dual marketplace foundation: managed TeknTandao BPO/KPO engagements plus a direct-hire freelancer marketplace for UK, EU and US customers.
 
 ## Source projects pinned as Git submodules
 
@@ -38,7 +38,7 @@ docker compose up --build
 
 The upstream Docker setup describes a frontend on `http://localhost:5173` and backend on `http://localhost:4000`. Follow upstream README and environment configuration before running. By default, the example backend uses local SQLite, mock AI and mock Stripe payments: **not production billing**. Do not add real payment credentials or customer data while evaluating the foundation.
 
-## Intended TeknTandao workflow
+## Intended managed outsourcing workflow
 
 1. International company registers and passes organization verification.
 2. Client requests a fixed-scope project, ongoing managed service or vetted team.
@@ -61,3 +61,9 @@ Start with a **managed delivery model**: TeknTandao owns quality assurance and s
 ## Status
 
 This is a **foundation integration proposal**. Existing EWork ASP.NET application code remains untouched; this branch does **not** claim a production-ready, integrated marketplace or deployment. Upstream functionality and advertised production readiness are unverified until tests, code review and security assessment pass.
+
+## Direct freelancer marketplace — implemented in overlay
+
+Open `/freelance` for published offers from manually verified sellers, `/freelance/gigs/:id` for Basic/Standard/Premium tiers and service requests, or `/freelance/workspace` to apply as a seller, manage listings, respond to orders, submit work, request revisions, communicate and review. Admins can verify sellers and resolve order disputes. Pricing uses minor-unit integers and a proposed 12% fee snapshot; **no money is collected or disbursed**.
+
+Both models use the same Firebase auth foundation but keep order and managed engagement data separate. See `overlay/README.md` for routes, configuration, security boundaries, and test commands. This is not a deployed service.

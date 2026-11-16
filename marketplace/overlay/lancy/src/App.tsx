@@ -29,6 +29,7 @@ import DashboardRequests from './pages/DashboardRequests';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import PageTransition from './components/PageTransition';
 import { TeknTandaoServices, TeknTandaoDashboard } from './pages/TeknTandaoManaged';
+import { FreelanceCatalog, FreelanceGigDetails, FreelanceWorkspace } from './pages/TeknTandaoFreelance';
 
 function Home() {
   return <div className="relative min-h-screen bg-white text-neutral-900 antialiased">
@@ -45,6 +46,9 @@ export default function App() {
   return <ThemeProvider><AuthProvider><Router><Routes>
     <Route path="/" element={<PageTransition><Home /></PageTransition>} />
     <Route path="/services" element={<TeknTandaoServices />} />
+    <Route path="/freelance" element={<FreelanceCatalog />} />
+    <Route path="/freelance/gigs/:id" element={<FreelanceGigDetails />} />
+    <Route path="/freelance/workspace" element={<ProtectedRoute><FreelanceWorkspace /></ProtectedRoute>} />
     <Route path="/managed" element={<ProtectedRoute><TeknTandaoDashboard /></ProtectedRoute>} />
     <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
     <Route path="/register" element={<PageTransition><Register /></PageTransition>} />

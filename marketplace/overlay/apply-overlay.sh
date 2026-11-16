@@ -27,6 +27,9 @@ done < <(find "$SOURCE" -type f -print0)
 if ! grep -q '^model ManagedOrganization {' "$TARGET/backend/prisma/schema.prisma"; then
   cat "$ROOT/marketplace/overlay/prisma-managed.prisma" >> "$TARGET/backend/prisma/schema.prisma"
 fi
-echo "Applied TeknTandao managed-services overlay to Lancy checkout at $CURRENT"
+if ! grep -q '^model FreelanceSeller {' "$TARGET/backend/prisma/schema.prisma"; then
+  cat "$ROOT/marketplace/overlay/prisma-freelance.prisma" >> "$TARGET/backend/prisma/schema.prisma"
+fi
+echo "Applied TeknTandao managed-services and freelance marketplace overlays to Lancy checkout at $CURRENT"
 echo "Source lives in EWork/marketplace/overlay, while submodule remains pinned to the audited baseline."
 echo "Next: configure unique Firebase environment variables, install dependencies, generate Prisma client, and build."

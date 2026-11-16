@@ -1,0 +1,119 @@
+
+// Direct freelancer marketplace — purchase requests only; no payment provider is enabled.
+model FreelanceSeller {
+  id          String           @id @default(uuid())
+  userId      String           @unique
+  displayName String
+  headline    String
+  biography   String
+  country     String
+  skills      String
+  status      String           @default("PENDING")
+  verifiedAt  DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  gigs        FreelanceGig[]
+  orders      FreelanceOrder[]
+  reviews     FreelanceReview[]
+}
+
+model FreelanceGig {
+  id          String             @id @default(uuid())
+  sellerId    String
+  seller      FreelanceSeller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  category    String
+  tags        String
+  status      String             @default("DRAFT")
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  publishedAt DateTime?
+  packages    FreelancePackage[]
+  orders      FreelanceOrder[]
+  @@index([sellerId, status])
+  @@index([category, status])
+}
+
+model FreelancePackage {
+  id           String          @id @default(uuid())
+  gigId        String
+  gig          FreelanceGig    @relation(fields: [gigId], references: [id], onDelete: Cascade)
+  tier         String
+  description  String
+  priceCents   Int
+  currency     String
+  deliveryDays Int
+  revisions    Int             @default(1)
+  createdAt    DateTime        @default(now())
+  orders       FreelanceOrder[]
+  @@unique([gigId, tier])
+}
+
+model FreelanceOrder {
+  id               String             @id @default(uuid())
+  buyerId          String
+  sellerId         String
+  seller           FreelanceSeller    @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  gigId            String
+  gig              FreelanceGig       @relation(fields: [gigId], references: [id], onDelete: Restrict)
+  packageId        String
+  package          FreelancePackage   @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  buyerBrief       String
+  priceCents       Int
+  commissionCents  Int
+  sellerNetCents   Int
+  currency         String
+  revisionLimit    Int
+  revisionsUsed    Int                @default(0)
+  status           String             @default("REQUESTED")
+  paymentStatus    String             @default("NOT_CONFIGURED")
+  deliveryNote     String?
+  revisionFeedback String?
+  submittedAt      DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  messages         FreelanceMessage[]
+  review           FreelanceReview?
+  dispute          FreelanceDispute?
+  @@index([buyerId, status])
+  @@index([sellerId, status])
+}
+
+model FreelanceMessage {
+  id        String          @id @default(uuid())
+  orderId   String
+  order     FreelanceOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  authorId  String
+  body      String
+  createdAt DateTime        @default(now())
+  @@index([orderId, createdAt])
+}
+
+model FreelanceReview {
+  id        String           @id @default(uuid())
+  orderId   String           @unique
+  order     FreelanceOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  sellerId  String
+  seller    FreelanceSeller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  buyerId   String
+  rating    Int
+  comment   String
+  createdAt DateTime         @default(now())
+  @@index([sellerId, createdAt])
+}
+
+model FreelanceDispute {
+  id         String          @id @default(uuid())
+  orderId    String          @unique
+  order      FreelanceOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  openedById String
+  reason     String
+  status     String          @default("OPEN")
+  decision   String?
+  resolvedBy String?
+  resolvedAt DateTime?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
