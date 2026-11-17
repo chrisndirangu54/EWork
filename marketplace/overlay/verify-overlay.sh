@@ -14,4 +14,9 @@ grep -q 'path="/freelance/workspace"' "$TARGET/src/App.tsx"
 grep -q 'model FreelanceOrder' "$TARGET/backend/prisma/schema.prisma"
 grep -q 'model FreelanceGig' "$TARGET/backend/prisma/schema.prisma"
 [[ -f "$TARGET/backend/src/freelance/freelance.controller.ts" ]]
+grep -q 'model MarketplaceCheckoutAttempt' "$TARGET/backend/prisma/schema.prisma"
+grep -q 'model MarketplaceAttachment' "$TARGET/backend/prisma/schema.prisma"
+[[ -f "$TARGET/backend/src/commerce/commerce-payment.controller.ts" ]]
+[[ -f "$TARGET/backend/src/documents/private-document.controller.ts" ]]
+grep -q 'path="/payment/return"' "$TARGET/src/App.tsx"
 echo 'Static integration assertions passed (not a substitute for runtime tests or audit).'

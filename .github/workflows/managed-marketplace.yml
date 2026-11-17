@@ -1,4 +1,4 @@
-name: TeknTandao dual-marketplace verification
+name: TeknTandao marketplace commerce and security CI
 on:
   pull_request:
     paths:
@@ -38,7 +38,13 @@ jobs:
           npx prisma generate
           npx prisma db push
           npm run build
-          node -r ts-node/register --test tests/firebase-token.test.ts tests/managed-service.test.ts tests/freelance.test.ts
+          node -r ts-node/register --test tests/firebase-token.test.ts tests/managed-service.test.ts tests/freelance.test.ts tests/commerce-payment.test.ts tests/private-document.test.ts
+      - name: Security source invariants
+        run: node marketplace/scripts/security-invariants.cjs
+      - name: Dependency security audit (report only; must be cleared before production)
+        working-directory: marketplace/upstream/lancy/backend
+        continue-on-error: true
+        run: npm audit --omit=dev --audit-level=high
       - name: Build frontend
         working-directory: marketplace/upstream/lancy
         run: |

@@ -1,0 +1,61 @@
+
+// Payments are disabled by default. Checkout attempts require explicit sandbox mode.
+// No escrow, payout or fund custody is implemented by these records.
+model MarketplaceCheckoutAttempt {
+  id                  String   @id @default(uuid())
+  reference           String   @unique
+  provider            String   @default("FLUTTERWAVE")
+  kind                String
+  resourceId          String
+  buyerId             String
+  amountCents         Int
+  currency            String
+  status              String   @default("CREATED")
+  providerTransactionId String? @unique
+  checkoutUrl         String?
+  verifiedAt          DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  @@index([kind, resourceId, status])
+  @@index([buyerId, createdAt])
+}
+
+model MarketplacePaymentReceipt {
+  id             String   @id @default(uuid())
+  provider       String
+  eventId        String   @unique
+  attemptId      String
+  transactionId  String
+  createdAt      DateTime @default(now())
+  @@index([attemptId])
+}
+
+// An internal, non-transferring payout estimate; this is NOT a payable bank instruction.
+model MarketplacePayoutDraft {
+  id             String   @id @default(uuid())
+  freelanceOrderId String @unique
+  sellerId       String
+  currency       String
+  grossCents     Int
+  feeCents       Int
+  netCents       Int
+  status         String   @default("DRAFT")
+  createdAt      DateTime @default(now())
+  @@index([sellerId])
+}
+
+// Encrypted private attachments. Never store personal files under a public URL.
+model MarketplaceAttachment {
+  id            String    @id @default(uuid())
+  scope         String
+  resourceId    String
+  uploadedById  String
+  filename      String
+  contentType   String
+  sizeBytes     Int
+  sha256        String
+  objectKey     String    @unique
+  createdAt     DateTime  @default(now())
+  deletedAt     DateTime?
+  @@index([scope, resourceId])
+}

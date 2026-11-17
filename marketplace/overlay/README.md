@@ -148,3 +148,31 @@ bash marketplace/overlay/verify-overlay.sh
 ```
 
 The script appends both Prisma schema fragments **idempotently** to the pinned Lancy checkout, then copies first-party source and tests. Do not run `prisma db push` on an existing production database. Prepare a reviewed migration and backup/rollback rehearsal first.
+
+## Secure-commerce integration (development / sandbox)
+
+This version adds:
+- **Flutterwave sandbox checkout only**, independently verified against the provider by transaction ID, reference, exact price and currency before marking `PAID_TEST`.
+- Signed webhooks with version-aware verification: `verif-hash` for v3, and raw-body HMAC-SHA256 `flutterwave-signature` for v4; every successful notification is independently verified through Flutterwave's transaction API. Replay attempts are detected through unique payment receipts.
+- The existing order fee snapshot and **non-transferring** payout estimate records. No escrow, live settlement, or automatic transfer.
+- Encrypted private project documents: AES-256-GCM, upload size cap 2 MiB, PDF/PNG/JPEG signatures, server-side role scoping, download audit records, and attachment-only responses.
+- A dedicated return page `/payment/return` for authenticated sandbox reconciliation and a disabled-by-default test checkout button on eligible accepted requests.
+- Server-side request body limit of 4 MiB, raw webhook body preservation, secure headers and security-invariant tests.
+
+### Setup
+
+Copy `env.backend.example` to `backend/.env`; replace values with credentials from **your own** approved Flutterwave sandbox account. For sandbox testing set `PAYMENTS_MODE=SANDBOX`, `FLW_SECRET_KEY` to your **test** secret (must start with `FLWSECK_TEST-`), and configure `FLW_WEBHOOK_SECRET` to a random 20+-character webhook secret. Set `FLW_WEBHOOK_MODE=V3_HASH` when using Flutterwave v3 webhooks and `FLW_RETURN_URL` to the authorized `/payment/return` frontend URL. Enable the sandbox webhook at `/api/v1/commerce/webhook/flutterwave`.
+
+For private files, set `DOCUMENT_VAULT_DIR` to a dedicated absolute private path on a persistent disk, and set `DOCUMENT_VAULT_KEY_B64` to a securely generated 32-byte base64 key, stored outside the repository. Example key generation: `openssl rand -base64 32`. Do not store keys in logs, Git or public client variables. Restrict disk access, encrypt backup volumes and test restores. Never reset the key without migrating existing encrypted files. The vault rejects production access unless `DOCUMENT_VAULT_APPROVED=true` is explicitly set after operational approval. The content format is application-level AES-GCM but there is **no integrated malware scanning**; file rendering is disabled by forced download.
+
+The sandbox checkout is meant for internal provider tests only: end users should not mistake `PAID_TEST` for real cleared funds. A genuine merchant account, provider-approved split settlements, correct tax handling and recipient verification are essential before enabling production funds flow.
+
+### Security and compliance blockers for production
+
+The CI includes a focused regression suite and a non-blocking `npm audit` report; it is **not** a professional security certification. Production readiness still requires a review of *all* Lancy endpoints, proper API-wide abuse/rate controls, anti-malware scanning and object storage or a hardened persistent document vault, formal KYC/KYB checks, full refund/chargeback reconciliation, invoices and tax rules, data transfer agreements, PCI scope review, privacy impact assessment, backups/recovery, incident response and professional penetration testing. Existing live apps are not modified by merging this branch.
+
+Run `node marketplace/scripts/security-invariants.cjs` locally or in CI to check for a dangerous environment configuration and regression in fail-closed rules. Its green result is necessary but not sufficient for production launch.
+
+### Legacy mocked payments disabled
+
+The upstream Lancy `PaymentsModule` is deliberately removed from the overlay's NestJS app module. Its mock purchase/refund/webhook endpoints must not be simultaneously exposed alongside TeknTandao's separate sandbox-only payment API, to avoid contradictory financial records. Existing upstream pages that depend on these legacy routes may need rework; those pages are not certified for billing. A real production ledger and reconciliation flow require a further reviewed change.
