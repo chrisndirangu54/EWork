@@ -172,3 +172,7 @@ The sandbox checkout is meant for internal provider tests only: end users should
 The CI includes a focused regression suite and a non-blocking `npm audit` report; it is **not** a professional security certification. Production readiness still requires a review of *all* Lancy endpoints, proper API-wide abuse/rate controls, anti-malware scanning and object storage or a hardened persistent document vault, formal KYC/KYB checks, full refund/chargeback reconciliation, invoices and tax rules, data transfer agreements, PCI scope review, privacy impact assessment, backups/recovery, incident response and professional penetration testing. Existing live apps are not modified by merging this branch.
 
 Run `node marketplace/scripts/security-invariants.cjs` locally or in CI to check for a dangerous environment configuration and regression in fail-closed rules. Its green result is necessary but not sufficient for production launch.
+
+### Legacy mocked payments disabled
+
+The upstream Lancy `PaymentsModule` is deliberately removed from the overlay's NestJS app module. Its mock purchase/refund/webhook endpoints must not be simultaneously exposed alongside TeknTandao's separate sandbox-only payment API, to avoid contradictory financial records. Existing upstream pages that depend on these legacy routes may need rework; those pages are not certified for billing. A real production ledger and reconciliation flow require a further reviewed change.

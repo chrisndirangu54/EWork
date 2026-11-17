@@ -20,6 +20,7 @@ assert(documents.includes("createCipheriv('aes-256-gcm'"),'Document encryption g
 assert(documents.includes('await this.authorize(user, selected.scope, selected.resourceId)'),'Document access boundary missing');
 assert(main.includes("limit: '4mb'"),'API body size limit missing');
 assert(app.includes('CommercePaymentModule')&&app.includes('PrivateDocumentModule'),'Commerce routes not installed');
+assert(!app.includes('PaymentsModule'),'Legacy mock payment endpoints must not be active');
 
 // Reject production checkout or open document-vault execution without manual security review.
 if(process.env.NODE_ENV==='production'){

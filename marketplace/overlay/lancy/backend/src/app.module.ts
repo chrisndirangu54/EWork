@@ -9,7 +9,6 @@ import { ContractsModule } from './contracts/contracts.module';
 import { MilestonesModule } from './milestones/milestones.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { MessagingModule } from './messaging/messaging.module';
-import { PaymentsModule } from './payments/payments.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { SearchModule } from './search/search.module';
 import { AdminModule } from './admin/admin.module';
@@ -25,7 +24,7 @@ import { PrivateDocumentModule } from './documents/private-document.module';
 
 @Module({
   imports: [DatabaseModule, AuthModule, UsersModule, FreelancersModule, ProjectsModule, ProposalsModule,
-    ContractsModule, MilestonesModule, NotificationsModule, MessagingModule, PaymentsModule, ReviewsModule,
+    ContractsModule, MilestonesModule, NotificationsModule, MessagingModule, ReviewsModule,
     SearchModule, AdminModule, AnalyticsModule, AiModule, HealthModule, RecommendationsModule, ManagedModule, FreelanceModule, CommercePaymentModule, PrivateDocumentModule],
 })
 export class AppModule implements NestModule {
