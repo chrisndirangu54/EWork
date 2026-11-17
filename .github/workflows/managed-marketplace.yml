@@ -45,7 +45,7 @@ jobs:
           cd marketplace/upstream/lancy/backend
           export DATABASE_URL='postgresql://test:test@localhost:5432/tgs?schema=public'
           npx prisma validate --schema prisma/schema.production.prisma
-          npx prisma migrate diff --from-empty --to-schema prisma/schema.production.prisma --script > /tmp/initial-postgres.sql
+          npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.production.prisma --script > /tmp/initial-postgres.sql
           grep -q 'CREATE TABLE' /tmp/initial-postgres.sql
       - name: Container image build (no deployment)
         run: |

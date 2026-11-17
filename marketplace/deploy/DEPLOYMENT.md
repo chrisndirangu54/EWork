@@ -39,7 +39,7 @@ npm ci
 # A placeholder URL suffices for schema *validation* and SQL generation, not for a live connection.
 export DATABASE_URL='postgresql://test:test@localhost:5432/tgs?schema=public'
 npx prisma validate --schema prisma/schema.production.prisma
-npx prisma migrate diff --from-empty --to-schema prisma/schema.production.prisma --script > /tmp/tgs-bootstrap.sql
+npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.production.prisma --script > /tmp/tgs-bootstrap.sql
 ```
 
 **Read and review** `/tmp/tgs-bootstrap.sql`. This script is for a **brand-new empty PostgreSQL database only**. Do not apply it to an existing production database. For a first deployment, create a reviewed Prisma baseline migration at `prisma/migrations/000000000000_init/migration.sql` from that file; then, with a **real** secure `DATABASE_URL` set, run `npx prisma migrate deploy --schema prisma/schema.production.prisma`. Test on a staging database first. Existing SQLite data are NOT migrated automatically, and later schema changes require reviewed migrations.
