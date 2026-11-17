@@ -20,11 +20,13 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { ManagedModule } from './managed/managed.module';
 import { FreelanceModule } from './freelance/freelance.module';
+import { CommercePaymentModule } from './commerce/commerce-payment.module';
+import { PrivateDocumentModule } from './documents/private-document.module';
 
 @Module({
   imports: [DatabaseModule, AuthModule, UsersModule, FreelancersModule, ProjectsModule, ProposalsModule,
     ContractsModule, MilestonesModule, NotificationsModule, MessagingModule, PaymentsModule, ReviewsModule,
-    SearchModule, AdminModule, AnalyticsModule, AiModule, HealthModule, RecommendationsModule, ManagedModule, FreelanceModule],
+    SearchModule, AdminModule, AnalyticsModule, AiModule, HealthModule, RecommendationsModule, ManagedModule, FreelanceModule, CommercePaymentModule, PrivateDocumentModule],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

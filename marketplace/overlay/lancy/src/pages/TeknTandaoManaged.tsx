@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { managedApi } from '../services/managedApi';
+import { SecureDocuments, SandboxCheckout } from '../components/CommerceSecure';
 import type { BackendUser, Offering, Organization, Engagement } from '../services/managedApi';
 
 const fmt = (cents: number, currency: string) => {
@@ -184,6 +185,8 @@ export function TeknTandaoDashboard() {
           </div>}
           {!!e.invoices.length && <div className="border-t border-slate-200 pt-4"><h4 className="font-semibold">Invoice records (not payable online)</h4>
             {e.invoices.map(i=><p key={i.id} className="mt-2 text-sm">{i.number} · {fmt(i.amountCents, i.currency)} · {i.status}</p>)}</div>}
+          <SecureDocuments scope="MANAGED_ENGAGEMENT" resourceId={e.id}/>
+          {e.organization.ownerId===backendUser?.id && ['ACCEPTED','ACTIVE'].includes(e.status) && <SandboxCheckout kind="MANAGED_ENGAGEMENT" resourceId={e.id}/>}
           {backendUser?.role === 'ADMIN' && <div className="border-t border-slate-200 pt-4">
             <AdminEngagement engagement={e} me={backendUser} busy={busy} task={task} />
           </div>}

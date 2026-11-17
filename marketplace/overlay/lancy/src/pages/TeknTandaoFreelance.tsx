@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { managedApi } from '../services/managedApi';
+import { SecureDocuments, SandboxCheckout } from '../components/CommerceSecure';
 
 type Package = { id: string; tier: string; description: string; priceCents: number;
   currency: string; deliveryDays: number; revisions: number };
@@ -320,6 +321,9 @@ function OrderPanel({ order, currentUserId, sellerUserId, busy, perform }: {
     </form>}
     {order.dispute && <p className="text-sm text-amber-700">Dispute: {order.dispute.status} · {order.dispute.reason}</p>}
     {(buyer||seller||sellerUserId===currentUserId) && <OrderConversation order={order} currentUserId={currentUserId} busy={busy} perform={perform}/>}
+    {(buyer||seller) && <SecureDocuments scope="FREELANCE_ORDER" resourceId={order.id}/>}
+    {buyer && order.status==='IN_PROGRESS' && order.paymentStatus !== 'PAID_TEST' && <SandboxCheckout kind="FREELANCE_ORDER" resourceId={order.id}/>}
+    {order.paymentStatus === 'PAID_TEST' && <p className="text-xs text-amber-700">Sandbox payment verified — no real funds collected.</p>}
   </article>;
 }
 

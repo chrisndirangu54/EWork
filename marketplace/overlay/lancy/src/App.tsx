@@ -30,6 +30,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import PageTransition from './components/PageTransition';
 import { TeknTandaoServices, TeknTandaoDashboard } from './pages/TeknTandaoManaged';
 import { FreelanceCatalog, FreelanceGigDetails, FreelanceWorkspace } from './pages/TeknTandaoFreelance';
+import { SandboxPaymentReturn } from './components/CommerceSecure';
 
 function Home() {
   return <div className="relative min-h-screen bg-white text-neutral-900 antialiased">
@@ -47,6 +48,7 @@ export default function App() {
     <Route path="/" element={<PageTransition><Home /></PageTransition>} />
     <Route path="/services" element={<TeknTandaoServices />} />
     <Route path="/freelance" element={<FreelanceCatalog />} />
+    <Route path="/payment/return" element={<ProtectedRoute><SandboxPaymentReturn /></ProtectedRoute>} />
     <Route path="/freelance/gigs/:id" element={<FreelanceGigDetails />} />
     <Route path="/freelance/workspace" element={<ProtectedRoute><FreelanceWorkspace /></ProtectedRoute>} />
     <Route path="/managed" element={<ProtectedRoute><TeknTandaoDashboard /></ProtectedRoute>} />
