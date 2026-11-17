@@ -38,7 +38,7 @@ jobs:
           npx prisma generate
           npx prisma db push
           npm run build
-          node -r ts-node/register --test tests/firebase-token.test.ts tests/managed-service.test.ts tests/freelance.test.ts tests/commerce-payment.test.ts tests/private-document.test.ts tests/private-vault-gcs.test.ts
+          node -r ts-node/register --test tests/firebase-token.test.ts tests/managed-service.test.ts tests/freelance.test.ts tests/commerce-payment.test.ts tests/private-document.test.ts tests/private-vault-gcs.test.ts tests/global-jobs.test.ts
       - name: Prepare PostgreSQL and Cloud Run image context
         run: |
           node marketplace/deploy/test-production-build.cjs

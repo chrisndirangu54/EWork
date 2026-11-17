@@ -4,7 +4,7 @@ import { PrivateVaultStore } from './private-vault.store';
 import { PrismaService } from '../database/prisma.service';
 import { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 
-type Scope = 'FREELANCE_ORDER' | 'MANAGED_ENGAGEMENT';
+type Scope = 'FREELANCE_ORDER' | 'MANAGED_ENGAGEMENT' | 'GLOBAL_JOB';
 const MIME = new Set(['application/pdf', 'image/png', 'image/jpeg']);
 const MAX_FILE = 2 * 1024 * 1024;
 
@@ -39,6 +39,17 @@ export class PrivateDocumentService {
   constructor(private readonly prisma: PrismaService) {}
   private readonly store = new PrivateVaultStore();
   private async authorize(user: AuthenticatedUser, scope: Scope, resourceId: string) {
+    if (scope === 'GLOBAL_JOB') {
+      const job = await this.prisma.globalJob.findUnique({
+        where: { id: resourceId },
+        select: { employerId: true, selectedUserId: true, status: true },
+      });
+      if (!job || (user.id !== job.employerId &&
+          !(job.selectedUserId === user.id && ['IN_PROGRESS','COMPLETED'].includes(job.status)))) {
+        throw new NotFoundException('Job documents not found');
+      }
+      return;
+    }
     if (scope === 'FREELANCE_ORDER') {
       const order = await this.prisma.freelanceOrder.findUnique({
         where: { id: resourceId }, include: { seller: { select: { userId: true } } },
@@ -60,7 +71,7 @@ export class PrivateDocumentService {
     throw new BadRequestException('Unsupported document scope');
   }
   private validateScope(scope: unknown, resourceId: unknown): { scope: Scope, resourceId: string } {
-    if (scope !== 'FREELANCE_ORDER' && scope !== 'MANAGED_ENGAGEMENT') {
+    if (scope !== 'FREELANCE_ORDER' && scope !== 'MANAGED_ENGAGEMENT' && scope !== 'GLOBAL_JOB') {
       throw new BadRequestException('Unknown document scope');
     }
     if (typeof resourceId !== 'string' || !/^[a-zA-Z0-9_-]{1,80}$/.test(resourceId)) {

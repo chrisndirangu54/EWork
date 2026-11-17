@@ -21,11 +21,12 @@ import { ManagedModule } from './managed/managed.module';
 import { FreelanceModule } from './freelance/freelance.module';
 import { CommercePaymentModule } from './commerce/commerce-payment.module';
 import { PrivateDocumentModule } from './documents/private-document.module';
+import { GlobalJobsModule } from './global-jobs/global-jobs.module';
 
 @Module({
   imports: [DatabaseModule, AuthModule, UsersModule, FreelancersModule, ProjectsModule, ProposalsModule,
     ContractsModule, MilestonesModule, NotificationsModule, MessagingModule, ReviewsModule,
-    SearchModule, AdminModule, AnalyticsModule, AiModule, HealthModule, RecommendationsModule, ManagedModule, FreelanceModule, CommercePaymentModule, PrivateDocumentModule],
+    SearchModule, AdminModule, AnalyticsModule, AiModule, HealthModule, RecommendationsModule, ManagedModule, FreelanceModule, CommercePaymentModule, PrivateDocumentModule, GlobalJobsModule],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { auth } from '../firebase/config';
 import { managedApi } from '../services/managedApi';
 
-type Scope = 'FREELANCE_ORDER' | 'MANAGED_ENGAGEMENT';
+type Scope = 'FREELANCE_ORDER' | 'MANAGED_ENGAGEMENT' | 'GLOBAL_JOB';
 type Attachment = {id:string;filename:string;contentType:string;sizeBytes:number;createdAt:string};
 type Capabilities={livePaymentsEnabled:boolean;sandboxConfigured:boolean;escrowEnabled:boolean;actualPayoutsEnabled:boolean;provider:string};
 const apiBase = (import.meta.env.VITE_API_BASE_URL||'http://localhost:4000/api/v1').replace(/\/$/,'');

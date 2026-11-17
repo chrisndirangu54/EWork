@@ -19,4 +19,8 @@ grep -q 'model MarketplaceAttachment' "$TARGET/backend/prisma/schema.prisma"
 [[ -f "$TARGET/backend/src/commerce/commerce-payment.controller.ts" ]]
 [[ -f "$TARGET/backend/src/documents/private-document.controller.ts" ]]
 grep -q 'path="/payment/return"' "$TARGET/src/App.tsx"
+grep -q '^model GlobalJob {' "$TARGET/backend/prisma/schema.prisma"
+grep -q '^model GlobalJobApplication {' "$TARGET/backend/prisma/schema.prisma"
+[[ -f "$TARGET/backend/src/global-jobs/global-jobs.controller.ts" ]]
+grep -q 'path="/global-jobs"' "$TARGET/src/App.tsx"
 echo 'Static integration assertions passed (not a substitute for runtime tests or audit).'
