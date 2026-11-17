@@ -10,6 +10,7 @@ const payment=source('overlay/lancy/backend/src/commerce/commerce-payment.servic
 const documents=source('overlay/lancy/backend/src/documents/private-document.service.ts');
 const vault=source('overlay/lancy/backend/src/documents/private-vault.store.ts');
 const main=source('overlay/lancy/backend/src/main.ts');
+const globalJobs=source('overlay/lancy/backend/src/global-jobs/global-jobs.service.ts');
 
 assert(auth.includes('verifyFirebaseIdToken'),'Firebase signed ID token verification missing');
 assert(!auth.includes('defaultUser'),'Insecure default user fallback detected');
@@ -25,6 +26,9 @@ assert(vault.includes('ifGenerationMatch=0'),'Private object create-only guard m
 assert(main.includes("limit: '4mb'"),'API body size limit missing');
 assert(app.includes('CommercePaymentModule')&&app.includes('PrivateDocumentModule'),'Commerce routes not installed');
 assert(!app.includes('PaymentsModule'),'Legacy mock payment endpoints must not be active');
+assert(app.includes('GlobalJobsModule'),'Global jobs API must be installed');
+assert(globalJobs.includes('selectedUserId !== user.id'),'Assigned freelancer access checks missing');
+assert(globalJobs.includes('job.employerId !== user.id'),'Employer ownership check missing');
 
 // Reject production checkout or open document-vault execution without manual security review.
 if(process.env.NODE_ENV==='production'){

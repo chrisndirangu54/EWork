@@ -14,7 +14,11 @@ const base = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api/v1
 
 export async function managedApi<T>(path: string, body?: Record<string, unknown>, method?: string): Promise<T> {
   const token = await auth.currentUser?.getIdToken();
-  if (!token && path !== '/managed/catalog') throw new Error('Please sign in to continue.');
+  const publicRead = (!body && (!method || method === 'GET')) &&
+    (path === '/managed/catalog' || path === '/global-jobs' ||
+     path.startsWith('/global-jobs?q=') ||
+     (path.startsWith('/global-jobs/') && path.split('/').length === 3 && path !== '/global-jobs/workspace'));
+  if (!token && !publicRead) throw new Error('Please sign in to continue.');
   const response = await fetch(base + path, {
     method: method || (body ? 'POST' : 'GET'),
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
