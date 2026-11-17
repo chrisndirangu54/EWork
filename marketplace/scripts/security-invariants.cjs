@@ -8,6 +8,7 @@ const app=source('overlay/lancy/backend/src/app.module.ts');
 const auth=source('overlay/lancy/backend/src/common/guards/firebase-auth.guard.ts');
 const payment=source('overlay/lancy/backend/src/commerce/commerce-payment.service.ts');
 const documents=source('overlay/lancy/backend/src/documents/private-document.service.ts');
+const vault=source('overlay/lancy/backend/src/documents/private-vault.store.ts');
 const main=source('overlay/lancy/backend/src/main.ts');
 
 assert(auth.includes('verifyFirebaseIdToken'),'Firebase signed ID token verification missing');
@@ -18,6 +19,9 @@ assert(payment.includes('verifyTransactionMatch(result, attempt)'), 'Independent
 assert(payment.includes('marketplacePaymentReceipt.create'),'Payment event idempotency missing');
 assert(documents.includes("createCipheriv('aes-256-gcm'"),'Document encryption gate missing');
 assert(documents.includes('await this.authorize(user, selected.scope, selected.resourceId)'),'Document access boundary missing');
+assert(vault.includes('Production requires private Cloud Storage'),'Production GCS-only storage gate missing');
+assert(vault.includes('metadata.google.internal'),'Cloud Run service identity required');
+assert(vault.includes('ifGenerationMatch=0'),'Private object create-only guard missing');
 assert(main.includes("limit: '4mb'"),'API body size limit missing');
 assert(app.includes('CommercePaymentModule')&&app.includes('PrivateDocumentModule'),'Commerce routes not installed');
 assert(!app.includes('PaymentsModule'),'Legacy mock payment endpoints must not be active');
@@ -32,7 +36,7 @@ if(process.env.NODE_ENV==='production'){
   }
   assert(process.env.DOCUMENT_VAULT_APPROVED!=='true' ||
     (Buffer.from(process.env.DOCUMENT_VAULT_KEY_B64||'','base64').length===32 &&
-    path.isAbsolute(process.env.DOCUMENT_VAULT_DIR||'')),
-    'Approved vault requires private absolute path and 256-bit key');
+    process.env.DOCUMENT_VAULT_BACKEND==='gcs' && Boolean(process.env.DOCUMENT_VAULT_GCS_BUCKET)),
+    'Approved production vault requires GCS and a 256-bit key');
 }
 console.log('Static fail-closed marketplace security invariants passed. Not a security certification.');

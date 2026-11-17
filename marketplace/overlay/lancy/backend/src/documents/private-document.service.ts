@@ -1,7 +1,6 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
-import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
-import { resolve, join } from 'node:path';
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { PrivateVaultStore } from './private-vault.store';
 import { PrismaService } from '../database/prisma.service';
 import { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 
@@ -9,17 +8,12 @@ type Scope = 'FREELANCE_ORDER' | 'MANAGED_ENGAGEMENT';
 const MIME = new Set(['application/pdf', 'image/png', 'image/jpeg']);
 const MAX_FILE = 2 * 1024 * 1024;
 
-function keyAndDir() {
-  if (process.env.NODE_ENV === 'production' && process.env.DOCUMENT_VAULT_APPROVED !== 'true') {
-    throw new ServiceUnavailableException('Private document storage requires production approval');
-  }
+function vaultKey(): Buffer {
   const raw = process.env.DOCUMENT_VAULT_KEY_B64 || '';
   let key: Buffer;
   try { key = Buffer.from(raw, 'base64'); } catch { key = Buffer.alloc(0); }
-  if (key.length !== 32) throw new ServiceUnavailableException('Document vault encryption key must be 256 bits');
-  const dir = process.env.DOCUMENT_VAULT_DIR || '';
-  if (!dir || !dir.startsWith('/')) throw new ServiceUnavailableException('Document vault requires an absolute filesystem path');
-  return { key, dir: resolve(dir) };
+  if (key.length !== 32) throw new ServiceUnavailableException('Document vault requires a 256-bit key');
+  return key;
 }
 function checkSignature(bytes: Buffer, contentType: string): void {
   const pdf = bytes.subarray(0, 5).equals(Buffer.from('%PDF-'));
@@ -43,6 +37,7 @@ function cleanFilename(value: unknown): string {
 @Injectable()
 export class PrivateDocumentService {
   constructor(private readonly prisma: PrismaService) {}
+  private readonly store = new PrivateVaultStore();
   private async authorize(user: AuthenticatedUser, scope: Scope, resourceId: string) {
     if (scope === 'FREELANCE_ORDER') {
       const order = await this.prisma.freelanceOrder.findUnique({
@@ -99,16 +94,14 @@ export class PrivateDocumentService {
       throw new BadRequestException('File size must be 1 byte to 2 MiB');
     }
     checkSignature(plaintext, contentType);
-    const { key, dir } = keyAndDir();
+    const key = vaultKey();
     const iv = randomBytes(12);
     const cipher = createCipheriv('aes-256-gcm', key, iv);
     const encrypted = Buffer.concat([cipher.update(plaintext), cipher.final()]);
     const objectKey = randomUUID() + '.vault';
     const record = Buffer.concat([iv, cipher.getAuthTag(), encrypted]);
     const sha256 = createHash('sha256').update(plaintext).digest('hex');
-    await mkdir(dir, { recursive: true, mode: 0o700 });
-    const pathname = join(dir, objectKey);
-    await writeFile(pathname, record, { mode: 0o600, flag: 'wx' });
+    await this.store.write(objectKey, record);
     try {
       const created = await this.prisma.marketplaceAttachment.create({
         data: { scope, resourceId, uploadedById: user.id, filename, contentType,
@@ -120,7 +113,7 @@ export class PrivateDocumentService {
       });
       return created;
     } catch (error) {
-      await unlink(pathname).catch(() => {});
+      await this.store.remove(objectKey).catch(() => {});
       throw error;
     }
   }
@@ -130,9 +123,8 @@ export class PrivateDocumentService {
     if (!file || file.deletedAt) throw new NotFoundException('Document not found');
     const selected = this.validateScope(file.scope, file.resourceId);
     await this.authorize(user, selected.scope, selected.resourceId);
-    const { key, dir } = keyAndDir();
-    if (!/^[a-f0-9-]{36}\.vault$/.test(file.objectKey)) throw new NotFoundException('Invalid document key');
-    const record = await readFile(join(dir, file.objectKey));
+    const key = vaultKey();
+    const record = await this.store.read(file.objectKey);
     if (record.length < 29 || record.length > MAX_FILE + 28) throw new ServiceUnavailableException('Invalid vault record');
     const iv = record.subarray(0,12), tag = record.subarray(12,28);
     let plain: Buffer;
