@@ -22,7 +22,8 @@ try {
   const docker=fs.readFileSync(path.join(context,'Dockerfile'),'utf8');
   const staged=fs.readFileSync(path.join(context,'prisma/schema.prisma'),'utf8');
   assert(docker.includes('USER node'),'Container must not run as root');
-  assert(docker.includes('node dist/main.js'));
+  assert(docker.includes('CMD ["node","dist/main.js"]'));
+  assert(docker.includes('USER node'));
   assert(staged.includes('provider = "postgresql"'));
   assert(!fs.existsSync(path.join(context,'.env')));
   assert(!fs.existsSync(path.join(context,'node_modules')));

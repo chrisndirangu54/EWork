@@ -46,5 +46,7 @@ gcloud run deploy "$SERVICE" \
   --cpu-throttling \
   --set-env-vars "NODE_ENV=production,FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID,DOCUMENT_VAULT_BACKEND=gcs,DOCUMENT_VAULT_GCS_BUCKET=$DOCUMENT_VAULT_GCS_BUCKET,DOCUMENT_VAULT_APPROVED=false,PAYMENTS_MODE=DISABLED,AI_PROVIDER=MOCK,CORS_ORIGINS=https://$FIREBASE_PROJECT_ID.web.app" \
   --set-secrets "DATABASE_URL=$POSTGRES_SECRET_NAME:latest,DOCUMENT_VAULT_KEY_B64=$VAULT_KEY_SECRET_NAME:latest"
+# Enforce service-level limits in addition to the deployment revision limits.
+gcloud run services update "$SERVICE" --max 2 --min 0 --project "$GCP_PROJECT_ID" --region "$REGION"
 echo "Backend deployment requested; verify logs, database and permissions."
 echo "Private document access remains disabled until malware scanning and security approval."
