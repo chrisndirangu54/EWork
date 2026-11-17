@@ -176,3 +176,7 @@ Run `node marketplace/scripts/security-invariants.cjs` locally or in CI to check
 ### Legacy mocked payments disabled
 
 The upstream Lancy `PaymentsModule` is deliberately removed from the overlay's NestJS app module. Its mock purchase/refund/webhook endpoints must not be simultaneously exposed alongside TeknTandao's separate sandbox-only payment API, to avoid contradictory financial records. Existing upstream pages that depend on these legacy routes may need rework; those pages are not certified for billing. A real production ledger and reconciliation flow require a further reviewed change.
+
+## Firebase Hosting + Cloud Run low-cost deployment
+
+The deployment overlay adds a PostgreSQL Prisma schema generator, two-stage non-root Node.js Dockerfile, Cloud Run service deployment script (min instances **0**, max instances **2**) and Firebase Hosting same-origin API rewrites. The private AES-GCM document store can now use **private Google Cloud Storage** through Cloud Run's service identity rather than ephemeral local files. Local development still supports a private filesystem. The code **has not been deployed**, and live checkout remains disabled. All cloud provisioning, merchant approval and PostgreSQL initialization require explicitly authorized operator action. See [marketplace/deploy/DEPLOYMENT.md](../deploy/DEPLOYMENT.md) for prerequisites, security gates and instructions.

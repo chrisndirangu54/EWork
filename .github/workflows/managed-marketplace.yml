@@ -38,7 +38,20 @@ jobs:
           npx prisma generate
           npx prisma db push
           npm run build
-          node -r ts-node/register --test tests/firebase-token.test.ts tests/managed-service.test.ts tests/freelance.test.ts tests/commerce-payment.test.ts tests/private-document.test.ts
+          node -r ts-node/register --test tests/firebase-token.test.ts tests/managed-service.test.ts tests/freelance.test.ts tests/commerce-payment.test.ts tests/private-document.test.ts tests/private-vault-gcs.test.ts
+      - name: Prepare PostgreSQL and Cloud Run image context
+        run: |
+          node marketplace/deploy/test-production-build.cjs
+          cd marketplace/upstream/lancy/backend
+          export DATABASE_URL='postgresql://test:test@localhost:5432/tgs?schema=public'
+          npx prisma validate --schema prisma/schema.production.prisma
+          npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.production.prisma --script > /tmp/initial-postgres.sql
+          grep -q 'CREATE TABLE' /tmp/initial-postgres.sql
+      - name: Container image build (no deployment)
+        run: |
+          mkdir -p /tmp/tgs-production-image
+          bash marketplace/deploy/prepare-cloudrun-context.sh /tmp/tgs-production-image
+          docker build -t tekntandao-marketplace:ci /tmp/tgs-production-image
       - name: Security source invariants
         run: node marketplace/scripts/security-invariants.cjs
       - name: Dependency security audit (report only; must be cleared before production)
